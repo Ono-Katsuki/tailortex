@@ -1,0 +1,46 @@
+work/
+docs/BUILD-WEEK-SUBMISSION.md
+projects/
+node_modules/
+.DS_Store
+public/js/cloud-config.js
+.firebaserc
+SPEC.md
+
+# Private research data — never publish from the application repository
+projects/
+work/
+private/
+research/
+manuscripts/
+papers/
+submissions/
+attachments/
+notes/
+*.pdf
+*.tex
+*.bib
+*.docx
+*.zip
+*.tar
+*.tar.gz
+*.7z
+.ratex-*
+
+# Local agents, browser tests, and credentials
+.claude/
+.codex/
+.playwright-mcp/
+**/__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+
+# Firebase emulator / CLI artifacts (フェーズ7)
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebase/
+# クラウドモード設定(SPEC フェーズ7: 有効時のみクラウド、firebase-config.example.js を同梱)
+public/js/cloud-config.js

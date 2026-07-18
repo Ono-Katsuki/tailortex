@@ -1,0 +1,40 @@
+name: Main-function bug or improvement
+description: Report or improve document, project, collaboration, version, agent, or safety behavior.
+title: "[Core]: "
+labels: [core]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Main functions are beta and open to change. Reports are welcome even without a proposed fix. Do not attach manuscripts, downloaded papers, credentials, or private research data.
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Desired behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Main-function area
+      options:
+        - Document and LaTeX fidelity
+        - Project interoperability
+        - Collaboration
+        - Versions and submission evidence
+        - Agent interoperability
+        - Safety and data integrity
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility or preservation concerns
+      description: If known, explain what existing data or collaborators must remain compatible.

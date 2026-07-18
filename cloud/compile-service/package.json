@@ -1,0 +1,17 @@
+{
+  "name": "word-latex-compile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloud Run コンパイルサービス: 既存 server.js の /compile・/compile-accessible を切り出し、Firebase IDトークン認証と superadmin 管理 API を追加。Express 不使用(node http)。",
+  "main": "index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}

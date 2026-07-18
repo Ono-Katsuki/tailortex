@@ -1,0 +1,28 @@
+name: Accessibility experience or adaptation
+description: Describe a barrier, personal adaptation, or accessibility idea.
+title: "[Accessibility]: "
+labels: [accessibility]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Lived experience is valid evidence. You do not need to disclose a diagnosis or medical information. Never attach a real manuscript or private research data.
+  - type: textarea
+    id: barrier
+    attributes:
+      label: What is difficult now?
+      description: Describe the task, context, device, input method, or assistive technology when relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What would be easier for you?
+      description: A desired feeling or workflow is enough; a technical solution is optional.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Include synthetic examples only.

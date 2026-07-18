@@ -1,0 +1,188 @@
+rules_version = '2';
+
+// TailorTeX — Firestore rules
+//
+// フェーズ7:
+//   docs      : owner か collaborators のみ read/write。superadmin は全権。
+//   users     : 本人 read、profile のみ write。superadmin は全権。
+//   shares    : owner write / 全員 read(id を知る前提)。
+//   adminLogs : superadmin read のみ。write は Cloud Run(admin SDK)想定=全拒否。
+//
+// フェーズ14(ユーザー単位の権限・招待制)+ フェーズ13b(コメント権限):
+//   docs に access マップ {uid: "owner"|"editor"|"commenter"|"viewer"} と
+//   memberUids: [uid] を追加。本文(html/blocks 等)と comments を分離する。
+//     - docs read      : access[uid] in [owner/editor/commenter/viewer] or superadmin
+//     - docs write(本文): access[uid] in [owner/editor] or superadmin
+//     - access/memberUids 変更: owner か superadmin のみ(editor は本文のみ可)
+//     - docs/{docId}/comments/{cid}: read=メンバー全員, write=owner/editor/commenter
+//                                    (viewer 不可)
+//   invites/{inviteId}(フラット, {docId,email,role,invitedBy,ts}):
+//     - 招待メール本人(token.email == resource.data.email)が read/delete
+//     - doc の owner が create/read(superadmin 全権)
+//   招待回収は Cloud Run /claim-invites(admin SDK)で access に uid を安全に付与。
+//
+//   後方互換: 旧モデル(ownerUid / collaborators)も引き続きサポートする。
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- 共通ヘルパ ----
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isSuperadmin() {
+      return request.auth != null && request.auth.token.role == 'superadmin';
+    }
+
+    // 旧モデル(フェーズ7): ownerUid / collaborators
+    function isOwner(res) {
+      return request.auth != null
+        && 'ownerUid' in res.data
+        && res.data.ownerUid == request.auth.uid;
+    }
+    function isCollaborator(res) {
+      return request.auth != null
+        && 'collaborators' in res.data
+        && res.data.collaborators is list
+        && request.auth.uid in res.data.collaborators;
+    }
+
+    // 新モデル(フェーズ14/13b): access マップ {uid: role}
+    function accessMap(res) {
+      return ('access' in res.data && res.data.access is map) ? res.data.access : {};
+    }
+    function myRole(res) {
+      return request.auth == null ? null : accessMap(res)[request.auth.uid];
+    }
+    function isAccessOwner(res) {
+      return myRole(res) == 'owner';
+    }
+    function canReadDoc(res) {
+      return isSuperadmin() || isOwner(res) || isCollaborator(res)
+        || (myRole(res) in ['owner', 'editor', 'commenter', 'viewer']);
+    }
+    function canWriteBody(res) {
+      return isSuperadmin() || isOwner(res) || isCollaborator(res)
+        || (myRole(res) in ['owner', 'editor']);
+    }
+    function canComment(res) {
+      return isSuperadmin() || isOwner(res) || isCollaborator(res)
+        || (myRole(res) in ['owner', 'editor', 'commenter']);
+    }
+    // access / memberUids は owner・superadmin 以外は変更不可(非owner の editor に強制)
+    function accessUnchanged() {
+      return request.resource.data.access == resource.data.access
+        && request.resource.data.memberUids == resource.data.memberUids;
+    }
+
+    // 親 doc を参照するヘルパ(サブコレクション・invites 用)
+    function docExists(docId) {
+      return exists(/databases/$(database)/documents/docs/$(docId));
+    }
+    function docData(docId) {
+      return get(/databases/$(database)/documents/docs/$(docId));
+    }
+    function isDocOwnerFor(docId) {
+      return docExists(docId)
+        && (isOwner(docData(docId)) || isAccessOwner(docData(docId)));
+    }
+
+    // ---- docs ----
+    match /docs/{docId} {
+      // 読み取り: メンバー(旧 owner/collaborator or 新 access[uid]) か superadmin
+      allow read: if canReadDoc(resource);
+
+      // 作成: 本人が自分を ownerUid(旧) か access[uid]=='owner'(新)に設定した新規のみ
+      allow create: if isSuperadmin()
+        || (isSignedIn() && 'ownerUid' in request.resource.data
+            && request.resource.data.ownerUid == request.auth.uid)
+        || (isSignedIn() && 'access' in request.resource.data
+            && request.resource.data.access is map
+            && request.resource.data.access[request.auth.uid] == 'owner');
+
+      // 更新: owner / superadmin は無条件。editor(および旧 collaborator)は本文のみ可で、
+      //       access / memberUids は変更できない。commenter / viewer は本文 write 不可。
+      allow update: if isSuperadmin()
+        || isOwner(resource)
+        || isAccessOwner(resource)
+        || isCollaborator(resource)
+        || (canWriteBody(resource) && accessUnchanged());
+
+      // 削除: owner か superadmin
+      allow delete: if isSuperadmin() || isOwner(resource) || isAccessOwner(resource);
+
+      // versions サブコレクション: 本文編集権(owner/editor/collaborator)と同じ可視性
+      match /versions/{versionId} {
+        allow read, write: if isSuperadmin()
+          || (docExists(docId)
+              && (isOwner(docData(docId))
+                  || isCollaborator(docData(docId))
+                  || (myRole(docData(docId)) in ['owner', 'editor'])));
+      }
+
+      // comments サブコレクション(フェーズ13b): 本文とは分離
+      //   read : doc メンバー全員(viewer 含む)
+      //   write: owner / editor / commenter(viewer 不可)
+      match /comments/{cid} {
+        allow read: if docExists(docId) && canReadDoc(docData(docId));
+        allow write: if docExists(docId) && canComment(docData(docId));
+      }
+    }
+
+    // ---- invites(フェーズ14): {docId, email, role, invitedBy, ts} ----
+    match /invites/{inviteId} {
+      // 招待メール本人: 自分宛 invite を read / delete(回収後クリーンアップ)
+      allow read, delete: if isSignedIn()
+        && request.auth.token.email != null
+        && 'email' in resource.data
+        && resource.data.email == request.auth.token.email;
+      // doc の owner / superadmin: 自分の doc の invite を read(一覧)+ delete(取り消し)
+      allow read, delete: if isSuperadmin()
+        || (isSignedIn() && 'docId' in resource.data && isDocOwnerFor(resource.data.docId));
+      // doc の owner: 自分の doc の invite を作成
+      allow create: if isSuperadmin()
+        || (isSignedIn() && 'docId' in request.resource.data
+            && isDocOwnerFor(request.resource.data.docId));
+      // 更新は superadmin のみ(通常は create/delete で運用)
+      allow update: if isSuperadmin();
+    }
+
+    // ---- users/{uid}: 本人 read・profile のみ write、superadmin 全権 ----
+    match /users/{uid} {
+      allow read: if isSuperadmin() || (isSignedIn() && request.auth.uid == uid);
+
+      // 本人は profile 系フィールドのみ更新可。role は自分で変更できない
+      // (role 変更は Cloud Run の admin API / set-admin.js 経由=admin SDK)。
+      // 新規作成時、本人は role 未設定 or role=='user' のみ許可(自己昇格を防ぐ)。
+      allow create: if isSuperadmin()
+        || (isSignedIn() && request.auth.uid == uid
+            && (!('role' in request.resource.data) || request.resource.data.role == 'user'));
+
+      allow update: if isSuperadmin()
+        || (isSignedIn() && request.auth.uid == uid
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['displayName', 'photoURL', 'email', 'lastLoginAt', 'updatedAt']));
+
+      allow delete: if isSuperadmin();
+    }
+
+    // ---- shares: owner write / 全員 read ----
+    match /shares/{shareId} {
+      allow read: if true;
+      allow create: if isSignedIn()
+        && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if isSuperadmin() || isOwner(resource);
+    }
+
+    // ---- adminLogs: superadmin read のみ。write は admin SDK 想定=全拒否 ----
+    match /adminLogs/{logId} {
+      allow read: if isSuperadmin();
+      allow write: if false;
+    }
+
+    // ---- それ以外は superadmin のみ ----
+    match /{document=**} {
+      allow read, write: if isSuperadmin();
+    }
+  }
+}

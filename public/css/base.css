@@ -1,0 +1,404 @@
+/* ==========================================================
+   base.css — CSS変数・リセット・アプリ全体グリッド (Agent-UI)
+   ========================================================== */
+
+:root {
+  --word-blue: #185abd;      /* タイトルバー・アクセント */
+  --word-blue-dark: #124a9e;
+  --ribbon-bg: #f5f5f5;      /* リボン背景 */
+  --ribbon-hover: #e6e6e6;
+  --ribbon-active: #cce0f5;  /* 選択状態のボタン背景 */
+  --ribbon-border: #e1e1e1;
+  --canvas-bg: #808080;      /* ページ周囲のグレー背景 */
+  --page-shadow: 0 2px 8px rgba(0,0,0,.35);
+  --text-main: #262626;
+  --font-ui: "Yu Gothic UI", "Hiragino Sans", "Segoe UI", Meiryo, sans-serif;
+}
+
+/* ==========================================================
+   ダークモード
+   共有パレット変数を上書き。ライトの見た目は一切変えない
+   (data-theme=light では以下は一切適用されない)。
+   個別サーフェス (ダイアログ/バックステージ/パネル等) の色は
+   ribbon.css / document.css 末尾の [data-theme="dark"] ブロックで対応。
+   ========================================================== */
+:root[data-theme="dark"] {
+  --ribbon-bg: #2b2b2b;
+  --ribbon-hover: #3a3a3a;
+  --ribbon-active: #264a6e;
+  --ribbon-border: #444;
+  --canvas-bg: #3a3a3a;
+  --page-shadow: 0 2px 8px rgba(0,0,0,.6);
+  --text-main: #e8e8e8;
+  /* ダーク専用サーフェス変数 */
+  --dk-chrome: #1f1f1f;      /* タイトルバー・タブ行・ステータスバー・サイドバー */
+  --dk-chrome-hover: #333;
+  --dk-surface: #2b2b2b;     /* ダイアログ・メニュー・カード・パネル本体 */
+  --dk-surface-2: #262626;   /* パネルヘッダー・ペインバー・入れ子面 */
+  --dk-field: #3a3a3a;       /* 入力欄・セレクト */
+  --dk-border: #444;
+  --dk-border-2: #555;
+  --dk-text: #e8e8e8;
+  --dk-text-muted: #b0b0b0;
+  --dk-accent: #4a9eef;      /* ダーク上のアクセントライン等 */
+}
+:root[data-theme="dark"] body { background: #1e1e1e; color: var(--text-main); }
+
+/* ---------- リセット ---------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text-main);
+  background: var(--ribbon-bg);
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---------- フォーカスリング (フェーズ4: WCAG 2.4.7) ----------
+   2px 青リング + 1px オフセット。青背景 (タイトルバー等) では白リング。 */
+*:focus-visible {
+  outline: 2px solid var(--word-blue);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+/* 青背景クローム上は白リングで視認性を確保 */
+#titlebar *:focus-visible,
+#statusbar *:focus-visible,
+.ribbon-tab.file-tab:focus-visible,
+#share-btn:focus-visible {
+  outline-color: #fff;
+}
+/* 旧ブラウザ向けフォールバック (:focus-visible 非対応時は :focus) */
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible) {
+  outline: none;
+}
+
+select, input {
+  font-family: inherit;
+}
+
+img { max-width: 100%; }
+
+[hidden] { display: none !important; }
+
+/* ---------- アプリ全体グリッド (縦積み) ---------- */
+#titlebar    { flex: 0 0 auto; }
+#ribbon-tabs { flex: 0 0 auto; }
+#ribbon      { flex: 0 0 auto; }
+#workspace   { flex: 1 1 auto; min-height: 0; display: flex; }
+#statusbar   { flex: 0 0 auto; }
+
+/* ---------- workspace 内の横分割 ---------- */
+#editor-area {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#preview-pane,
+#source-pane {
+  flex: 0 0 50%;
+  max-width: 50%;
+  min-width: 0;
+}
+
+/* スレッド パネル (フェーズ17, 旧コメントパネル。編集領域の右) */
+#thread-panel {
+  flex: 0 0 300px;
+  max-width: 300px;
+  min-width: 0;
+}
+
+/* バージョン履歴パネル (フェーズ3.5, 編集領域の右) */
+#version-panel {
+  flex: 0 0 300px;
+  max-width: 300px;
+  min-width: 0;
+}
+
+/* 3分割時 (ソース + プレビュー 同時表示) */
+#workspace.split-3 #preview-pane,
+#workspace.split-3 #source-pane {
+  flex: 0 0 33.333%;
+  max-width: 33.333%;
+}
+
+/* コマンドボタン選択状態 (付け外しは editor.js の責務) */
+.is-active {
+  background: var(--ribbon-active) !important;
+  border-radius: 2px;
+}
+
+/* 細いスクロールバー */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #9d9d9d;
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover { background-color: #7a7a7a; }
+
+:root[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #555; }
+:root[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background-color: #6a6a6a; }
+
+/* ==========================================================
+   フェーズ4: アクセシビリティ ユーティリティ
+   ========================================================== */
+
+/* スクリーンリーダー専用 (視覚的に隠す) */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* 本文へスキップ リンク (フォーカスで可視化) */
+.skip-link {
+  position: fixed;
+  top: -80px;
+  left: 8px;
+  z-index: 100000;
+  background: var(--word-blue);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 0 0 4px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top .15s ease;
+}
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+}
+
+/* KeyTips (Alt キーヒント) */
+#keytip-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99999;
+}
+.keytip-badge {
+  position: fixed;
+  transform: translate(-50%, 0);
+  background: #3b3b3b;
+  color: #fff;
+  border: 1px solid #1e1e1e;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .45);
+  font-family: var(--font-ui);
+}
+
+/* ==========================================================
+   フェーズ4: モーション低減 (prefers-reduced-motion)
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================
+   フェーズ22: リフロー・低視力対応 (WCAG 2.2 / 1.4.10 / 1.4.11 / 1.4.12)
+   広幅 (>=1200px) の見た目は一切不変。1199px 以下でのみクロームを
+   折返し/内部スクロールさせ、320px まで横スクロール無しで操作可能にする。
+   ページキャンバス (#page-scroll) のみ2次元スクロールを許容 (1.4.10 例外)。
+   ========================================================== */
+@media (max-width: 1199px) {
+  /* リボンタブ行: タブは1行のまま内部で横スクロール
+     (タブから飛び出すメニューが無いので clip されて困る要素は無い) */
+  #ribbon-tabs { overflow-x: auto; overflow-y: hidden; }
+  /* リボン本体: グループを折返し (SPEC「折返し」案を採用)。
+     overflow でスクロールさせるとドロップダウンメニューが切れるため wrap。 */
+  #ribbon { height: auto; min-height: 94px; }
+  .ribbon-panel.active { flex-wrap: wrap; height: auto; align-content: flex-start; }
+  /* ステータスバー: 飛び出すメニューが無いので内部横スクロールで対応 */
+  #statusbar { overflow-x: auto; }
+  /* タイトルバー各領域がビューポート幅に合わせて縮むように */
+  .tb-left, .tb-right, .tb-center { min-width: 0; }
+}
+
+/* 小画面 (<768px): 飾りのクロームを省いて操作要素を確保 */
+@media (max-width: 767px) {
+  .tb-search,        /* 装飾の検索ボックス (aria-hidden) */
+  .win-controls,     /* 飾りのウィンドウ操作ボタン (非機能) */
+  .tb-sep { display: none; }
+  #titlebar { padding-left: 6px; }
+  .tb-center { max-width: 55%; }
+  .bs-content { padding: 20px 16px; }
+  .bs-sidebar { flex-basis: 132px; }
+  #thread-panel, #version-panel { flex-basis: min(300px, 86vw); max-width: min(300px, 86vw); }
+  #file-tree { flex-basis: min(240px, 74vw); max-width: min(240px, 74vw); }
+  #file-viewer { flex-basis: min(42%, 60vw); max-width: min(42%, 60vw); }
+}
+
+/* ==========================================================
+   フェーズ22: forced-colors (Windows ハイコントラスト)
+   選択・アクティブ状態は背景色が無効化されるため outline/border で示す。
+   ========================================================== */
+@media (forced-colors: active) {
+  /* コマンドボタン選択状態 (background:var(--ribbon-active) が失われる) */
+  .is-active { outline: 2px solid Highlight; outline-offset: -2px; }
+  /* フォーカスリングをシステム色で明示 */
+  *:focus-visible { outline-color: Highlight; }
+}
+
+/* ==========================================================
+   フェーズ22: prefers-contrast: more (境界線・区切りの最小限強化)
+   ========================================================== */
+@media (prefers-contrast: more) {
+  .ribbon-group::after,
+  .rb-mini-sep,
+  .tb-sep,
+  .rb-menu-sep,
+  .dlg-sep,
+  .tm-sep { opacity: 1; background: currentColor; }
+  #ribbon { border-bottom-color: currentColor; }
+}
+
+/* ==========================================================
+   フェーズ24: ログインゲート(クラウド配信時のログイン必須画面)
+   ========================================================== */
+#login-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: linear-gradient(160deg, #2b579a 0%, #1e3f73 100%);
+}
+#login-gate .lg-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .35);
+  padding: 40px 44px;
+  max-width: min(420px, calc(100vw - 32px));
+  text-align: center;
+  font-size: 0.875rem;
+}
+#login-gate .lg-mark {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 10px;
+  background: #2b579a;
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 56px;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+#login-gate h1 {
+  margin: 0 0 10px;
+  font-size: 1.25rem;
+  color: #222;
+}
+#login-gate .lg-desc { margin: 0 0 20px; color: #444; }
+#login-gate #login-gate-btn {
+  min-height: 40px;
+  padding: 8px 28px;
+  border: 1px solid #2b579a;
+  border-radius: 4px;
+  background: #2b579a;
+  color: #fff;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+#login-gate #login-gate-btn:hover { background: #1e3f73; }
+#login-gate .lg-note { margin: 18px 0 0; color: #777; font-size: 0.75rem; }
+/* ゲート表示中は下の UI を操作不能に(スクロールも止める) */
+body.login-gated { overflow: hidden; }
+
+.codex-inbox { position:fixed; inset:0; z-index:9000; padding:16px; background:rgba(0,0,0,.42); display:flex; align-items:center; justify-content:center; }
+.codex-inbox[hidden] { display:none; }
+.codex-card { width:min(760px,100%); height:min(760px,calc(100dvh - 32px)); background:#fff; color:#222; border-radius:12px; box-shadow:0 18px 60px rgba(0,0,0,.35); display:flex; flex-direction:column; overflow:hidden; }
+.codex-card header { display:flex; justify-content:space-between; gap:16px; padding:16px 18px; border-bottom:1px solid #ddd; }
+.codex-card h2 { margin:0; font-size:1.15rem; }.codex-card header p { margin:4px 0 0; color:#666; font-size:.82rem; }
+.codex-card header button { min-width:44px; min-height:44px; border:0; background:transparent; font-size:1.15rem; }
+.codex-messages { flex:1; overflow:auto; padding:16px; background:#f6f7f9; }
+.codex-message { max-width:88%; margin:0 0 14px; padding:11px 13px; border-radius:12px; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.5; }
+.codex-message.user { margin-left:auto; background:#dceaff; }.codex-message.reply { background:#fff; border:1px solid #d8d8d8; }
+.codex-message small { display:block; margin-top:6px; color:#666; font-size:.72rem; }
+.codex-message.streaming::after { content:''; display:inline-block; width:2px; height:1em; margin-left:3px; vertical-align:-.15em; background:currentColor; animation:codex-caret .8s steps(1) infinite; }
+@keyframes codex-caret { 50% { opacity:0; } }
+.codex-pointer { display:block; width:100%; margin:6px 0 0; padding:10px 12px; border:1px solid #9bb9e4; border-radius:7px; background:#fff; color:#164b91; text-align:left; font:inherit; font-size:.84rem; }
+.codex-pointer::before { content:'☞ '; font-size:1.05rem; }
+#codex-inbox-form { padding:14px 16px calc(14px + env(safe-area-inset-bottom)); border-top:1px solid #ddd; }
+#codex-inbox-form label { display:block; margin-bottom:5px; font-weight:600; font-size:.82rem; }
+#codex-inbox-recipient { min-height:40px; margin:0 0 10px; padding:6px 10px; border:1px solid #999; border-radius:6px; font:inherit; }
+.codex-context { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin:0 0 10px; padding:9px 10px; border-left:4px solid #185abd; background:#eef4ff; border-radius:4px; }
+.codex-context strong { font-size:.8rem; }.codex-context p { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; margin:3px 0 0; white-space:pre-wrap; font-size:.8rem; line-height:1.35; }
+.codex-context button { flex:none; min-height:36px; border:1px solid #999; border-radius:5px; background:#fff; }
+#codex-inbox-text { box-sizing:border-box; width:100%; resize:vertical; min-height:86px; padding:10px; border:1px solid #999; border-radius:7px; font:inherit; }
+.codex-form-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:8px; }.codex-form-row span { color:#555; font-size:.8rem; }
+.codex-form-row button { min-height:44px; padding:8px 20px; border:0; border-radius:6px; background:#185abd; color:#fff; font-weight:600; }
+.codex-badge { position:absolute; top:1px; right:1px; width:8px; height:8px; border-radius:50%; background:#ffcc00; }
+:root[data-theme="dark"] .codex-inbox { background:rgba(0,0,0,.7); }
+:root[data-theme="dark"] .codex-card { background:var(--dk-surface); color:var(--dk-text); box-shadow:0 18px 60px rgba(0,0,0,.7); }
+:root[data-theme="dark"] .codex-card header { background:var(--dk-surface-2); border-bottom-color:var(--dk-border); }
+:root[data-theme="dark"] .codex-card header p,
+:root[data-theme="dark"] .codex-message small,
+:root[data-theme="dark"] .codex-form-row span { color:var(--dk-text-muted); }
+:root[data-theme="dark"] .codex-card header button { color:var(--dk-text); }
+:root[data-theme="dark"] .codex-card header button:hover { background:var(--dk-chrome-hover); border-radius:6px; }
+:root[data-theme="dark"] .codex-messages { background:#202124; }
+:root[data-theme="dark"] .codex-message.user { background:#24466b; color:#f1f6ff; }
+:root[data-theme="dark"] .codex-message.reply { background:#303238; color:var(--dk-text); border-color:var(--dk-border-2); }
+:root[data-theme="dark"] .codex-pointer { background:#26384d; color:#b8d8ff; border-color:#526f91; }
+:root[data-theme="dark"] .codex-pointer:hover { background:#304862; }
+:root[data-theme="dark"] #codex-inbox-form { background:var(--dk-surface); border-top-color:var(--dk-border); }
+:root[data-theme="dark"] #codex-inbox-recipient,
+:root[data-theme="dark"] #codex-inbox-text { background:var(--dk-field); color:var(--dk-text); border-color:var(--dk-border-2); color-scheme:dark; }
+:root[data-theme="dark"] #codex-inbox-text::placeholder { color:#aaa; }
+:root[data-theme="dark"] .codex-context { background:#26384d; color:var(--dk-text); border-left-color:var(--dk-accent); }
+:root[data-theme="dark"] .codex-context button { background:var(--dk-field); color:var(--dk-text); border-color:var(--dk-border-2); }
+:root[data-theme="dark"] #codex-inbox-recipient:focus,
+:root[data-theme="dark"] #codex-inbox-text:focus { border-color:var(--dk-accent); outline:2px solid rgba(74,158,239,.3); }
+.selection-ai-action { position:fixed; z-index:8800; min-height:40px; padding:7px 13px; border:1px solid #164b91; border-radius:20px; background:#185abd; color:#fff; box-shadow:0 4px 14px rgba(0,0,0,.28); font-size:.85rem; font-weight:600; white-space:nowrap; touch-action:manipulation; }
+.selection-ai-action[hidden] { display:none; }
+@media (forced-colors: active) {
+  #login-gate { background: Canvas; }
+  #login-gate .lg-card { border: 1px solid CanvasText; }
+  #login-gate #login-gate-btn { border: 1px solid ButtonText; }
+}

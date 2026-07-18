@@ -1,0 +1,550 @@
+/* ==========================================================
+   projects.css — フェーズ15: プロジェクト層 UI
+   ファイルツリーサイドバー / ファイルビューア / git コミットパネル / 出力モード
+   ========================================================== */
+
+/* ================= ファイルツリー サイドバー ================= */
+#file-tree {
+  flex: 0 0 auto;
+  width: 280px;
+  max-width: 420px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  background: #f3f3f3;
+  border-right: 1px solid var(--ribbon-border);
+  font-size: 0.8125rem;
+  color: var(--text-main);
+  overflow: hidden;
+  resize: horizontal;
+}
+#workspace.tree-hidden #file-tree { display: none; }
+
+.ft-head {
+  flex: 0 0 auto;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--ribbon-border);
+}
+.ft-head-title {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 5px;
+}
+.ft-toolbar { display: flex; gap: 2px; overflow-x: auto; }
+.ft-tb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: #444;
+  cursor: pointer;
+}
+.ft-tb-btn:hover { background: var(--ribbon-hover); border-color: var(--ribbon-border); }
+.ft-tb-btn:active { background: var(--ribbon-active); }
+
+.ft-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 4px 0 12px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.ft-location {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 28px;
+  padding: 3px 9px;
+  border-bottom: 1px solid var(--ribbon-border);
+  color: #666;
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.ft-location-label { flex: 0 0 auto; font-weight: 600; }
+.ft-location-path { overflow: hidden; text-overflow: ellipsis; }
+.ft-empty {
+  padding: 16px 12px;
+  color: #888;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.ft-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding-right: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+}
+.ft-row:hover { background: #e4eefb; }
+.ft-node.is-selected > .ft-row { background: var(--ribbon-active); }
+
+.ft-twist {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: #666;
+  transition: transform .1s;
+  transform: rotate(90deg);
+  flex: 0 0 auto;
+}
+.ft-twist.is-collapsed { transform: rotate(0deg); }
+.ft-twist svg { width: 12px; height: 12px; }
+
+.ft-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: #5a5a5a;
+}
+.ft-icon svg { width: 15px; height: 15px; }
+.ft-icon-tex { color: #167a3c; }
+.ft-icon-bib { color: #9a5a00; }
+.ft-icon-pdf { color: #c0392b; }
+.ft-icon-img { color: #7d3cc0; }
+.ft-icon-doc { color: var(--word-blue); }
+.ft-icon-note { color: #4a7aa8; }
+
+.ft-name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ft-more {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1;
+  padding: 0 4px;
+  border-radius: 3px;
+  opacity: 0;
+}
+.ft-row:hover .ft-more { opacity: 1; }
+.ft-node.is-selected > .ft-row .ft-more,
+.ft-more:focus-visible { opacity: 1; }
+.ft-more:hover { background: rgba(0,0,0,.08); }
+
+.ft-context-menu {
+  position: fixed;
+  z-index: 12000;
+  min-width: 180px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.2);
+}
+.ft-context-item {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: #262626;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.ft-context-item:hover, .ft-context-item:focus-visible { background: #e8f0fb; outline: none; }
+.ft-context-item.danger { color: #b42318; }
+
+/* ================= ファイルビューア ================= */
+#file-viewer {
+  flex: 0 0 42%;
+  max-width: 42%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-left: 1px solid var(--ribbon-border);
+}
+.fv-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 8px;
+  background: var(--ribbon-bg);
+  border-bottom: 1px solid var(--ribbon-border);
+}
+.fv-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fv-spacer { flex: 1 1 auto; }
+.fv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  min-height: 24px; /* フェーズ22: ターゲットサイズ 24px 確保 (WCAG 2.5.8) */
+  padding: 0 8px;
+  border: 1px solid var(--ribbon-border);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--text-main);
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+.fv-btn:hover { background: var(--ribbon-hover); }
+.fv-close { border-color: transparent; background: transparent; font-size: 0.875rem; }
+.fv-close:hover { background: rgba(0,0,0,.08); }
+
+.fv-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.fv-frame { flex: 1 1 auto; width: 100%; height: 100%; border: 0; }
+.fv-text {
+  flex: 1 1 auto;
+  width: 100%;
+  border: 0;
+  padding: 12px 14px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  color: var(--text-main);
+  background: #fff;
+}
+.fv-pre {
+  margin: 0;
+  padding: 12px 14px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.78125rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-main);
+}
+.fv-markdown {
+  display: block;
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: 28px clamp(18px, 4vw, 42px) 64px;
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+.fv-markdown h1, .fv-markdown h2, .fv-markdown h3 { color: var(--text-main); line-height: 1.4; }
+.fv-markdown h1 { margin: 0 0 1em; padding-bottom: .5em; border-bottom: 2px solid var(--word-blue); font-size: 1.55rem; }
+.fv-markdown h2 { margin: 2em 0 .75em; padding-bottom: .35em; border-bottom: 1px solid var(--ribbon-border); font-size: 1.2rem; }
+.fv-markdown h3 { margin: 1.6em 0 .6em; font-size: 1.05rem; }
+.fv-markdown h1:first-child { margin-top: 0; }
+.fv-markdown p { margin: .8em 0; }
+.fv-markdown ul, .fv-markdown ol { margin: .8em 0 1.1em; padding-left: 1.6em; }
+.fv-markdown li { margin: .35em 0; padding-left: .2em; }
+.fv-markdown a { color: var(--word-blue); font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.fv-markdown strong { font-weight: 700; }
+.fv-markdown code { padding: .12em .35em; border-radius: 4px; background: #f1f3f5; font: .88em/1.5 "SFMono-Regular", Consolas, monospace; }
+.fv-markdown pre { overflow-x: auto; margin: 1em 0; padding: 14px 16px; border: 1px solid #d9dde3; border-radius: 6px; background: #f6f8fa; line-height: 1.55; }
+.fv-markdown pre code { padding: 0; background: transparent; font-size: .8125rem; }
+.fv-markdown blockquote { margin: 1em 0; padding: .65em 1em; border-left: 4px solid var(--word-blue); background: #f4f7fb; color: #4d5662; }
+.fv-markdown hr { margin: 2em 0; border: 0; border-top: 1px solid var(--ribbon-border); }
+.fv-table-wrap { max-width: 100%; margin: 1.25em 0 1.6em; overflow-x: auto; border: 1px solid #d5dae1; border-radius: 7px; -webkit-overflow-scrolling: touch; }
+.fv-markdown table { width: 100%; min-width: 520px; border-collapse: separate; border-spacing: 0; font-size: .875rem; line-height: 1.55; }
+.fv-markdown th, .fv-markdown td { padding: 10px 12px; border-right: 1px solid #e0e4e9; border-bottom: 1px solid #e0e4e9; text-align: left; vertical-align: top; }
+.fv-markdown th:last-child, .fv-markdown td:last-child { border-right: 0; }
+.fv-markdown tbody tr:last-child td { border-bottom: 0; }
+.fv-markdown th { position: sticky; top: 0; z-index: 1; background: #eaf1fa; color: #26384d; font-weight: 700; }
+.fv-markdown tbody tr:nth-child(even) td { background: #f8fafc; }
+.fv-markdown tbody tr:hover td { background: #edf4fc; }
+:root[data-theme="dark"] .fv-markdown code { background: #252a31; }
+:root[data-theme="dark"] .fv-markdown pre { background: #1f242b; border-color: var(--dk-border); }
+:root[data-theme="dark"] .fv-markdown blockquote { background: #202b38; color: var(--dk-text-muted); }
+:root[data-theme="dark"] .fv-table-wrap { border-color: var(--dk-border); }
+:root[data-theme="dark"] .fv-markdown th { background: #273648; color: var(--dk-text); }
+:root[data-theme="dark"] .fv-markdown th, :root[data-theme="dark"] .fv-markdown td { border-color: var(--dk-border); }
+:root[data-theme="dark"] .fv-markdown tbody tr:nth-child(even) td { background: #20252c; }
+:root[data-theme="dark"] .fv-markdown tbody tr:hover td { background: #293442; }
+
+@media (max-width: 1100px) {
+  #file-viewer { flex-basis: 52%; max-width: 52%; }
+  .fv-markdown { padding-top: 22px; font-size: 1rem; line-height: 1.9; }
+}
+
+/* メモ・論文・本文リンクを一列でたどる参照パネル */
+#link-overview {
+  flex: 0 0 340px;
+  max-width: min(340px, 88vw);
+  min-width: 260px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-left: 1px solid var(--ribbon-border);
+}
+#link-overview[hidden] { display: none; }
+.lo-head { flex: 0 0 auto; display: flex; align-items: center; gap: 7px; min-height: 46px; padding: 6px 9px 6px 12px; background: var(--ribbon-bg); border-bottom: 1px solid var(--ribbon-border); }
+.lo-head > div:first-child { flex: 1 1 auto; min-width: 0; }
+.lo-title { font-size: .8125rem; font-weight: 700; }
+.lo-count { margin-top: 1px; color: #777; font-size: .6875rem; }
+.lo-refresh, .lo-expand, .lo-close { width: 30px; height: 30px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: inherit; font-size: 1rem; cursor: pointer; }
+.lo-refresh:hover, .lo-expand:hover, .lo-close:hover, .lo-refresh:focus-visible, .lo-expand:focus-visible, .lo-close:focus-visible { background: var(--ribbon-hover); border-color: var(--ribbon-border); }
+.lo-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 5px 0 18px; }
+.lo-section-title { position: sticky; top: 0; z-index: 1; margin: 0; padding: 8px 12px 5px; background: #fff; color: #666; font-size: .6875rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.lo-item { display: block; box-sizing: border-box; width: auto; margin: 6px 9px; padding: 11px 12px; border: 1px solid #dde3eb; border-radius: 7px; background: #fff; color: var(--text-main); text-align: left; }
+.lo-item:hover, .lo-item:focus-visible { border-color: #9bb7d8; box-shadow: 0 1px 5px rgba(35,70,110,.12); outline: none; }
+.lo-label { display: block; font-size: .8125rem; font-weight: 600; overflow-wrap: anywhere; }
+.lo-location { display: block; margin-top: 3px; color: #777; font-size: .6875rem; line-height: 1.4; overflow-wrap: anywhere; }
+.lo-kind { display: inline-block; margin-right: 5px; color: var(--word-blue); }
+.lo-preview { max-height: 18em; margin-top: 8px; overflow-y: auto; padding: 9px 10px; border-left: 3px solid #b8cbe2; background: #f7f9fc; white-space: pre-wrap; word-break: break-word; font-size: .75rem; line-height: 1.65; }
+.lo-card-btn { margin: 8px 6px 0 0; padding: 4px 9px; border: 1px solid #b9c8da; border-radius: 4px; background: #f7faff; color: #24588f; font-size: .6875rem; cursor: pointer; }
+.lo-card-btn:hover, .lo-card-btn:focus-visible { background: #e5effa; outline: 2px solid #2b579a; outline-offset: 1px; }
+.lo-open-btn { font-weight: 600; }
+.lo-literature-item { padding:0; overflow:hidden; }.lo-literature-title { position:sticky; top:0; z-index:1; margin:0; padding:11px 13px; background:#eef4fb; color:#193b65; font-size:.95rem; }
+.lo-stream-label { padding:10px 12px 3px; font-size:.75rem; font-weight:700; color:#555; }
+.lo-literature-note { max-height:none; margin:4px 12px 12px; overflow:visible; }
+.lo-pdf-slot { position:relative; display:flex; width:calc(100% - 24px); align-items:center; justify-content:center; min-height:220px; max-height:320px; margin:4px 12px 16px; padding:0; overflow:hidden; border:1px solid #c5cfdb; border-radius:7px; background:#f2f4f7; color:#687383; font-size:.75rem; cursor:zoom-in; }
+.lo-pdf-slot::after { content:'タップして全画面'; position:absolute; right:8px; bottom:8px; padding:5px 8px; border-radius:14px; background:rgba(20,50,85,.82); color:#fff; font-size:.68rem; pointer-events:none; }
+.lo-pdf-frame { width:100%; height:300px; border:0; background:#fff; pointer-events:none; }
+.lo-pdf-modal { position:fixed; inset:0; z-index:10020; display:flex; flex-direction:column; background:#20242a; }
+.lo-pdf-modal[hidden] { display:none; }.lo-pdf-modal-head { flex:none; display:flex; align-items:center; gap:12px; min-height:52px; padding:0 10px 0 16px; background:#fff; border-bottom:1px solid #bbb; }
+.lo-pdf-modal-head strong { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }.lo-pdf-modal-head button { width:44px; height:44px; border:0; background:transparent; font-size:1.4rem; }
+.lo-pdf-pager { flex:none; display:flex; align-items:center; gap:2px; }.lo-pdf-pager label { display:flex; align-items:center; gap:6px; white-space:nowrap; font-size:.88rem; }.lo-pdf-page { width:58px; padding:6px 4px; border:1px solid #aaa; border-radius:6px; text-align:center; font:inherit; }.lo-pdf-pager button:disabled { opacity:.3; }
+.lo-pdf-modal > iframe { flex:1; width:100%; border:0; background:#555; }.lo-pdf-modal-open { overflow:hidden; }
+@media (max-width:600px) { .lo-pdf-modal-head { gap:3px; padding-left:8px; }.lo-pdf-modal-head strong { max-width:25vw; font-size:.82rem; }.lo-pdf-pager label { gap:3px; font-size:.78rem; }.lo-pdf-page { width:52px; }.lo-pdf-modal-head button { width:38px; } }
+.lo-status, .lo-empty { padding: 16px 12px; color: #777; font-size: .8125rem; }
+:root[data-theme="dark"] #link-overview, :root[data-theme="dark"] .lo-section-title { background: var(--dk-surface); color: var(--dk-text); }
+:root[data-theme="dark"] #link-overview { border-left-color: var(--dk-border); }
+:root[data-theme="dark"] .lo-item { border-bottom-color: var(--dk-border); color: var(--dk-text); }
+:root[data-theme="dark"] .lo-item:hover, :root[data-theme="dark"] .lo-item:focus-visible { background: var(--dk-hover); }
+:root[data-theme="dark"] .lo-item { background: var(--dk-surface); border-color: var(--dk-border); }
+:root[data-theme="dark"] .lo-preview { background: #202832; border-left-color: #526b87; }
+:root[data-theme="dark"] .lo-card-btn { background: #273648; border-color: #526b87; color: #c9ddf5; }
+
+/* 右パネルを残したまま、必要時だけ全画面モーダルへ拡大する。 */
+#link-overview.is-fullscreen {
+  position: fixed;
+  inset: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  z-index: 10020;
+  width: auto;
+  max-width: none;
+  min-width: 0;
+  border: 1px solid #9eabb9;
+  border-radius: 10px;
+  box-shadow: 0 0 0 100vmax rgba(15, 24, 36, .58), 0 12px 38px rgba(0,0,0,.35);
+}
+#link-overview.is-fullscreen .lo-head { min-height: 54px; padding-left: 18px; }
+#link-overview.is-fullscreen .lo-title { font-size: 1rem; }
+#link-overview.is-fullscreen .lo-body { padding: 10px clamp(8px, 3vw, 36px) 30px; }
+#link-overview.is-fullscreen .lo-item { max-width: 980px; margin: 9px auto; padding: 15px 17px; }
+#link-overview.is-fullscreen .lo-section-title { max-width: 980px; margin: 0 auto; padding-top: 12px; }
+#link-overview.is-fullscreen .lo-preview { max-height: none; font-size: .875rem; line-height: 1.75; }
+body.link-overview-modal { overflow: hidden; }
+.fv-imgwrap {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #f0f0f0;
+}
+.fv-imgwrap img { max-width: 100%; max-height: 100%; box-shadow: 0 1px 6px rgba(0,0,0,.25); }
+.fv-loading, .fv-error { padding: 16px; color: #888; font-size: 0.8125rem; }
+.fv-error { color: #c0392b; }
+
+/* ================= git コミットパネル(version-panel 内) ================= */
+.git-commit-box {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ribbon-border);
+}
+.git-msg {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--ribbon-border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  resize: vertical;
+  min-height: 42px;
+  color: var(--text-main);
+  background: #fff;
+}
+.git-branch-box { padding:10px 12px; border-bottom:1px solid var(--ribbon-border); background:#f4f7fb; }
+.git-branch-box > label { display:block; margin-bottom:5px; font-size:.75rem; font-weight:600; }
+.git-branch-row { display:flex; gap:6px; margin-top:6px; }
+.git-branch-row select, .git-branch-row input { min-width:0; flex:1; min-height:36px; box-sizing:border-box; border:1px solid var(--ribbon-border); border-radius:4px; padding:5px 7px; background:#fff; color:var(--text-main); font:inherit; }
+.git-branch-row button { flex:none; min-height:36px; border:1px solid var(--word-blue); border-radius:4px; padding:5px 10px; background:#fff; color:var(--word-blue); cursor:pointer; }
+.submission-box { padding:10px 12px; border-bottom:1px solid var(--ribbon-border); }
+.submission-box > strong { font-size:.8rem; }.submission-box > p { margin:3px 0 7px; color:#666; font-size:.7rem; line-height:1.35; }
+.submission-list { margin-top:8px; }.submission-item { display:flex; align-items:center; gap:8px; padding:7px 0; border-top:1px solid #ddd; font-size:.72rem; }
+.submission-item > div { min-width:0; flex:1; }.submission-item b,.submission-item small,.submission-item span { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }.submission-item small,.submission-item span { color:#666; margin-top:2px; }
+.submission-item button { flex:none; min-height:36px; border:1px solid var(--word-blue); border-radius:4px; background:#fff; color:var(--word-blue); }
+.git-commit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.git-status { flex: 1 1 auto; font-size: 0.6875rem; color: #777; }
+.git-commit-btn {
+  flex: 0 0 auto;
+  border: 1px solid var(--word-blue);
+  background: var(--word-blue);
+  color: #fff;
+  border-radius: 4px;
+  padding: 5px 14px;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.git-commit-btn:hover { background: var(--word-blue-dark); }
+
+.git-commits { padding: 4px 0; }
+.git-commit-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+.git-commit-item:hover { background: #e4eefb; }
+.gc-msg {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gc-meta { display: block; margin-top: 2px; font-size: 0.6875rem; color: #888; }
+.gc-hash {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  background: rgba(0,0,0,.06);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+/* ================= 出力モード ================= */
+#output-mode-toggle.is-final {
+  background: #e7f3ea;
+  border-color: #1e8e4a;
+  color: #1e6b3a;
+  font-weight: 600;
+}
+.output-mode-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 0.8125rem;
+  color: var(--text-main);
+  cursor: pointer;
+}
+.output-mode-option input { width: 15px; height: 15px; }
+
+/* ================= ダークモード ================= */
+:root[data-theme="dark"] #file-tree {
+  background: var(--dk-chrome);
+  border-right-color: var(--dk-border);
+  color: var(--dk-text);
+}
+:root[data-theme="dark"] .ft-head { border-bottom-color: var(--dk-border); }
+:root[data-theme="dark"] .ft-location { color: var(--dk-text-muted); border-bottom-color: var(--dk-border); }
+:root[data-theme="dark"] .ft-head-title { color: var(--dk-text-muted); }
+:root[data-theme="dark"] .ft-tb-btn { color: var(--dk-text-muted); }
+:root[data-theme="dark"] .ft-tb-btn:hover { background: var(--dk-chrome-hover); border-color: var(--dk-border); }
+:root[data-theme="dark"] .ft-row:hover { background: var(--dk-chrome-hover); }
+:root[data-theme="dark"] .ft-node.is-selected > .ft-row { background: var(--ribbon-active); }
+:root[data-theme="dark"] .ft-icon { color: var(--dk-text-muted); }
+:root[data-theme="dark"] .ft-empty { color: var(--dk-text-muted); }
+:root[data-theme="dark"] .ft-more { color: var(--dk-text-muted); }
+:root[data-theme="dark"] .ft-more:hover { background: rgba(255,255,255,.1); }
+:root[data-theme="dark"] .ft-context-menu { background: var(--dk-surface); border-color: var(--dk-border); }
+:root[data-theme="dark"] .ft-context-item { color: var(--dk-text); }
+:root[data-theme="dark"] .ft-context-item:hover,
+:root[data-theme="dark"] .ft-context-item:focus-visible { background: var(--dk-chrome-hover); }
+:root[data-theme="dark"] .ft-context-item.danger { color: #ff8a80; }
+
+:root[data-theme="dark"] #file-viewer { background: var(--dk-surface); border-left-color: var(--dk-border); }
+:root[data-theme="dark"] .fv-bar { background: var(--dk-surface-2); border-bottom-color: var(--dk-border); }
+:root[data-theme="dark"] .fv-title { color: var(--dk-text); }
+:root[data-theme="dark"] .fv-btn { background: var(--dk-field); border-color: var(--dk-border); color: var(--dk-text); }
+:root[data-theme="dark"] .fv-btn:hover { background: var(--dk-chrome-hover); }
+:root[data-theme="dark"] .fv-text { background: var(--dk-surface); color: var(--dk-text); }
+:root[data-theme="dark"] .fv-pre { color: var(--dk-text); }
+:root[data-theme="dark"] .fv-imgwrap { background: #1a1a1a; }
+
+:root[data-theme="dark"] .git-commit-box { border-bottom-color: var(--dk-border); }
+:root[data-theme="dark"] .git-msg { background: var(--dk-field); border-color: var(--dk-border); color: var(--dk-text); }
+:root[data-theme="dark"] .git-branch-box { background:var(--dk-surface-2); border-bottom-color:var(--dk-border); color:var(--dk-text); }
+:root[data-theme="dark"] .git-branch-row select,
+:root[data-theme="dark"] .git-branch-row input { background:var(--dk-field); border-color:var(--dk-border-2); color:var(--dk-text); color-scheme:dark; }
+:root[data-theme="dark"] .git-branch-row input::placeholder { color:#aaa; }
+:root[data-theme="dark"] .git-branch-row button,
+:root[data-theme="dark"] .submission-item button { background:#26384d; border-color:#526f91; color:#b8d8ff; }
+:root[data-theme="dark"] .git-branch-row button:hover,
+:root[data-theme="dark"] .submission-item button:hover { background:#304862; }
+:root[data-theme="dark"] .submission-box { background:var(--dk-surface-2); border-bottom-color:var(--dk-border); color:var(--dk-text); }
+:root[data-theme="dark"] .submission-box > p,
+:root[data-theme="dark"] .submission-item small,
+:root[data-theme="dark"] .submission-item span,
+:root[data-theme="dark"] .git-status,
+:root[data-theme="dark"] .gc-meta { color:var(--dk-text-muted); }
+:root[data-theme="dark"] .submission-item { border-top-color:var(--dk-border); }
+:root[data-theme="dark"] .git-commit-item { border-bottom-color: var(--dk-border); }
+:root[data-theme="dark"] .git-commit-item:hover { background: var(--dk-chrome-hover); }
+:root[data-theme="dark"] .gc-msg { color: var(--dk-text); }
+:root[data-theme="dark"] .gc-hash { background: rgba(255,255,255,.12); }
+:root[data-theme="dark"] #output-mode-toggle.is-final { background: #1f3a28; border-color: #2e7d4a; color: #7fd6a0; }
+
+/* ==========================================================
+   フェーズ22: パネルのアクセシビリティ
+   ========================================================== */
+
+/* 固定バーによるフォーカス遮蔽の防止 (WCAG 2.4.11) */
+.ft-body, .fv-body { scroll-padding-top: 8px; scroll-padding-bottom: 8px; }
+
+/* forced-colors: ファイルツリー選択・hover を outline で明示 */
+@media (forced-colors: active) {
+  .ft-node.is-selected > .ft-row,
+  .ft-row:hover { outline: 2px solid Highlight; outline-offset: -2px; }
+  .git-commit-item:hover { outline: 2px solid Highlight; outline-offset: -2px; }
+  .fv-btn:hover, .fv-btn:focus-visible,
+  .ft-tb-btn:hover, .ft-tb-btn:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; }
+}
+
+/* prefers-contrast: パネル境界の最小限強化 */
+@media (prefers-contrast: more) {
+  #file-tree { border-right-color: #767676; }
+  #file-viewer { border-left-color: #767676; }
+  .fv-bar { border-bottom-color: #767676; }
+  .fv-btn, .git-msg { border-color: #767676; }
+}

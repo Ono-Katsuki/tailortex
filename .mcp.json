@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "word-latex": {
+      "command": "node",
+      "args": ["mcp-server.js"],
+      "env": { "RATEX_AGENT": "claude_code" }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "tailortex",
+  "version": "0.1.0-beta.1",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "A local-first, accessible visual workspace for writing real LaTeX documents",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/server.test.mjs test/agent-worker.test.mjs",
+    "test:syntax": "node --check server.js && node --check mcp-server.js && node --check agent-worker.js && for f in public/js/*.js cloud/compile-service/index.js cloud/scripts/set-admin.js; do node --check \"$f\" || exit 1; done",
+    "test:public": "node scripts/check-publication-safety.js",
+    "emulators": "firebase emulators:start --only auth,firestore,hosting",
+    "test:rules": "firebase emulators:exec --only firestore,storage --project demo-wordtex \"node --test test/rules.test.mjs test/storage.rules.test.mjs\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "firebase": "^12.16.0",
+    "jszip": "^3.10.1",
+    "mammoth": "^1.12.0"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.1",
+    "axe-core": "^4.12.1",
+    "firebase-admin": "^12.7.0",
+    "firebase-tools": "^13.29.1",
+    "temml": "^0.13.3"
+  }
+}
