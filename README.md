@@ -70,6 +70,52 @@ Agents may edit files and run verification when requested. Before an agent task,
 
 Agent conversations, comments, and working links are system metadata. They are kept separate from publication-ready `main.tex` so research coordination does not leak into the submitted paper.
 
+## How Codex and GPT-5.6 were used — OpenAI Build Week
+
+TailorTeX was developed during OpenAI Build Week in July 2026 with Codex powered by GPT-5.6 as a sustained design and implementation partner. The author directed the work through natural-language judgments grounded in writing research from bed with a single-switch setup. Codex inspected the existing prototype, implemented and revised features, tested real research workflows, diagnosed manuscript-loss failures, and prepared the public beta. The author made the product decisions: participation rather than efficiency as the central problem; a visual interface for inspection rather than console-only automation; agent action without forced read-only restrictions; separation of research content from coordination metadata; and a stable collaboration core beneath individually adaptable interfaces.
+
+Work completed with Codex after the submission period began includes:
+
+- cross-platform local-server and documentation improvements;
+- reflow, forced-colors, keyboard, screen-reader, MathML, and automated accessibility work;
+- substantial MCP and browser-agent bridge improvements, including practical project discovery, streamed responses, persistent sessions, and slash commands;
+- Safari/iPad fixes and project-folder, tree, touch, dark-mode, Markdown, table, and bibliography UX improvements;
+- source-preserving visual editing for existing TeX and stronger protection against catastrophic `main.tex` replacement;
+- deeper folder operations, document import, layout, and round-trip editing improvements;
+- draft/version and frozen-submission workflows, publication-safety checks, tests, English documentation, licensing, and contribution boundaries for the open-source beta.
+
+At runtime, TailorTeX also integrates Codex as the default researcher-facing agent, so Codex is both how this release was built and part of what it does. A researcher can point to selected manuscript or note text, ask Codex to act on the project, and inspect the streamed response and resulting files in the same visual workspace.
+
+### Prior work and development record
+
+TailorTeX meaningfully extends the author's earlier private prototype. Before the Build Week submission period began on July 13, 2026 at 9:00 a.m. Pacific Time, that prototype already contained the basic visual LaTeX editor, project model, initial MCP project operations, comments and linked assets, and an initial cross-device live-session implementation. Those capabilities are not claimed as Build Week work.
+
+The private working history records the submission-period implementation from `374e466` (July 16, 2026 JST) through `6ac1098` (July 19, 2026 JST). To prevent private manuscripts, research artifacts, internal plans, and earlier branding from being exposed, the public repository was deliberately created from a reviewed, clean-history snapshot at `ed260f4` on July 19, 2026; subsequent public commits preserve release changes. The Codex `/feedback` session supplied with the Devpost submission provides the corresponding timestamped collaboration record.
+
+Third-party JavaScript dependencies and exact resolved versions are disclosed in `package.json` and `package-lock.json`; bundled browser libraries retain their license files under `public/vendor/`. TailorTeX's frontend is vanilla JavaScript without a build step, and its local server primarily uses Node.js standard-library APIs.
+
+## Testing TailorTeX as a judge
+
+TailorTeX is a local-first web application. There is no hosted demo or required account; the AI bridge runs on the judge's own machine.
+
+Requirements: Node.js 20 or later, Git, and a TeX distribution with `latexmk` plus XeLaTeX or LuaLaTeX. MacTeX is recommended on macOS and TeX Live on Windows. To test AI collaboration, install and sign in to the Codex CLI.
+
+```bash
+git clone https://github.com/Ono-Katsuki/tailortex.git
+cd tailortex
+npm install
+npm start
+```
+
+Open <http://localhost:3000>, create or open a sample project, and then try the following:
+
+1. Edit the manuscript visually and inspect its TeX and bibliography files.
+2. Select manuscript or Markdown-note text and choose **Ask AI**; the request is routed to Codex and the reply streams back.
+3. Open the linked-research stream and inspect lightweight note and PDF previews.
+4. Create and switch a draft branch, then freeze a submission record and inspect its SHA-256 manifest.
+
+Automated verification is available through `npm test`, `npm run test:syntax`, and `npm run test:public`. The reference setup is a macOS host with desktop or iPad browser clients. Troubleshooting is covered in the [User Guide](docs/USER-GUIDE.md).
+
 ## Accessibility and forks
 
 You are encouraged to fork TailorTeX and adapt it to your own access needs. Examples include changing contrast, density, reading order, interaction timing, pointer targets, keyboard behavior, speech feedback, or the balance between visual and textual presentation.
@@ -111,4 +157,4 @@ The frontend uses vanilla JavaScript without a build step. The local server uses
 
 ## Project status and license
 
-This repository is being prepared for its first public beta release. TailorTeX is licensed under the [Apache License 2.0](LICENSE).
+TailorTeX is available as a public beta and is licensed under the [Apache License 2.0](LICENSE).
