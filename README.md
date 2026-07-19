@@ -4,7 +4,7 @@ TailorTeX is a local-first, accessible visual workspace for writing real LaTeX d
 
 > For many researchers, LLMs improve efficiency. For a researcher who works from bed and operates an iPad with a single head switch, they can determine whether participation is possible at all.
 
-![TailorTeX workspace in dark mode with its ribbon, closed project folders, bibliography file, and manuscript page](docs/guide-workspace.png)
+![TailorTeX — Research, shaped around you. Accessible, agent-assisted LaTeX writing in a visual research workspace.](docs/tailortex-social-preview.png)
 
 > **Beta software.** TailorTeX is usable, but many parts are still rough, incomplete, or based on assumptions that need to be challenged through real use. Bug reports, accessibility experiences, issues, and pull requests are welcome—including changes to main functions.
 
