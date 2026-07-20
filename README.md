@@ -44,7 +44,7 @@ If you want to reshape the interface with a coding agent, follow [Customizing Ta
 
 Requirements:
 
-- Node.js 20 or later
+- Node.js 20 or 22 LTS
 - A TeX distribution with `latexmk` and XeLaTeX or LuaLaTeX
 - Git, recommended for draft/version features
 
@@ -55,7 +55,7 @@ npm install
 npm start
 ```
 
-Open <http://localhost:3000>. To use another device on the same trusted LAN, open the Mac's LAN address on port 3000.
+Open <http://localhost:3000>. TailorTeX selects its display language from the browser; choose **Display > English** in the ribbon if you need to change it. On first launch, use **File > New > Blank document** and give the local project a recognizable name. To use another device on the same trusted LAN, open the Mac's LAN address on port 3000.
 
 Optional accessible-PDF tools:
 
@@ -98,7 +98,7 @@ Third-party JavaScript dependencies and exact resolved versions are disclosed in
 
 TailorTeX is a local-first web application. There is no hosted demo or required account; the AI bridge runs on the judge's own machine.
 
-Requirements: Node.js 20 or later, Git, and a TeX distribution with `latexmk` plus XeLaTeX or LuaLaTeX. MacTeX is recommended on macOS and TeX Live on Windows. To test AI collaboration, install and sign in to the Codex CLI.
+Requirements: Node.js 20 or 22 LTS, Git, and a TeX distribution with `latexmk` plus XeLaTeX or LuaLaTeX. MacTeX is recommended on macOS and TeX Live on Windows. To test AI collaboration, install and sign in to the Codex CLI.
 
 ```bash
 git clone https://github.com/Ono-Katsuki/tailortex.git
@@ -107,7 +107,7 @@ npm install
 npm start
 ```
 
-Open <http://localhost:3000>, create or open a sample project, and then try the following:
+Open <http://localhost:3000>. TailorTeX follows the browser language automatically; select **Display > English** if needed. Choose **File > New > Blank document**, give the local project a recognizable name, and then try the following:
 
 1. Edit the manuscript visually and inspect its TeX and bibliography files.
 2. Select manuscript or Markdown-note text and choose **Ask AI**; the request is routed to Codex and the reply streams back.
