@@ -45,10 +45,10 @@ If you want to reshape the interface with a coding agent, follow [Customizing Ta
 Requirements:
 
 - Node.js 20 or 22 LTS
-- A TeX distribution with `latexmk` and XeLaTeX or LuaLaTeX
+- Codex CLI, installed and signed in
 - Git, recommended for draft/version features
 
-On macOS, MacTeX is recommended. On Windows, TeX Live is recommended; MiKTeX can also work when on-demand package installation is enabled.
+PDF compilation is optional for the first test. It requires a TeX distribution with `latexmk` and XeLaTeX or LuaLaTeX. On macOS, MacTeX is recommended. On Windows, TeX Live is recommended; MiKTeX can also work when on-demand package installation is enabled.
 
 ```bash
 npm install
@@ -96,9 +96,11 @@ Third-party JavaScript dependencies and exact resolved versions are disclosed in
 
 ## Testing TailorTeX as a judge
 
-TailorTeX is a local-first web application. There is no hosted demo or required account; the AI bridge runs on the judge's own machine.
+TailorTeX is a local-first web application. There is no hosted demo or TailorTeX account; the application and AI bridge run on the judge's own machine. Codex CLI authentication is required for the agent workflow.
 
-Requirements: Node.js 20 or 22 LTS, Git, and a TeX distribution with `latexmk` plus XeLaTeX or LuaLaTeX. MacTeX is recommended on macOS and TeX Live on Windows. To test AI collaboration, install and sign in to the Codex CLI.
+### Five-minute core test
+
+Install Node.js 20 or 22 LTS and install and sign in to the Codex CLI. This is enough to test TailorTeX's central experience: visually pointing Codex to research material, receiving a streamed response, and inspecting the project after the agent acts. Git is recommended for the draft/version workflow.
 
 ```bash
 git clone https://github.com/Ono-Katsuki/tailortex.git
@@ -109,10 +111,14 @@ npm start
 
 Open <http://localhost:3000>. TailorTeX follows the browser language automatically; select **Display > English** if needed. Choose **File > New > Blank document**, give the local project a recognizable name, and then try the following:
 
-1. Edit the manuscript visually and inspect its TeX and bibliography files.
+1. Edit the manuscript visually and inspect its source and bibliography files.
 2. Select manuscript or Markdown-note text and choose **Ask AI**; the request is routed to Codex and the reply streams back.
-3. Open the linked-research stream and inspect lightweight note and PDF previews.
+3. Open the linked-research stream and inspect its notes and lightweight previews.
 4. Create and switch a draft branch, then freeze a submission record and inspect its SHA-256 manifest.
+
+### Optional PDF compilation test
+
+Install a TeX distribution only if you want to compile and inspect the generated PDF. TailorTeX requires `latexmk` with XeLaTeX or LuaLaTeX. MacTeX is recommended on macOS and TeX Live on Windows; MiKTeX can also work when on-demand package installation is enabled. Optional accessible-PDF validation uses veraPDF and Python with PyMuPDF.
 
 Automated verification is available through `npm test`, `npm run test:syntax`, and `npm run test:public`. The reference setup is a macOS host with desktop or iPad browser clients. Troubleshooting is covered in the [User Guide](docs/USER-GUIDE.md).
 
