@@ -1413,11 +1413,12 @@
     } catch (e) {}
     var navs = (navigator.languages && navigator.languages.length)
       ? navigator.languages : [navigator.language || navigator.userLanguage || ''];
-    for (var i = 0; i < navs.length; i++) {
-      var n = normalizeLang(navs[i]);
-      if (n) return n;
-    }
-    return 'ja';
+    // The public beta guarantees complete Japanese and English paths. On a new
+    // device, use Japanese only when it is the browser's primary language;
+    // every other locale starts in English. An explicit menu choice above is
+    // still saved and takes precedence on later visits.
+    var primary = String(navs[0] || '').toLowerCase();
+    return primary === 'ja' || primary.indexOf('ja-') === 0 ? 'ja' : 'en';
   }
 
   /* ---------- 参照 (レース耐性) ---------- */
